@@ -3,9 +3,14 @@
 import tkinter as tk
 from Admin_interface import admin_login_screen, add_question_form, view_questions_form
 
-
 def start_admin_flow():
-    add_question_form(root)
+    admin_menu = tk.Frame(root)
+    admin_menu.pack(pady=50)
+
+    tk.Label(admin_menu, text="Admin Panel", font=("Arial", 16)).pack(pady=10)
+
+    tk.Button(admin_menu, text="Add Question", width=25, command=lambda: [admin_menu.destroy(), add_question_form(root)]).pack(pady=5)
+    tk.Button(admin_menu, text="View Questions", width=25, command=lambda: [admin_menu.destroy(), view_questions_form(root)]).pack(pady=5)
 
 def start_app():
     login_frame = tk.Frame(root)
@@ -21,14 +26,3 @@ if __name__ == "__main__":
     root.geometry("500x500")
     start_app()
     root.mainloop()
-
-# adds buttons to admin for add/view 
-def start_admin_flow():
-    admin_menu = tk.Frame(root)
-    admin_menu.pack(pady=50)
-
-    tk.Label(admin_menu, text="Admin Panel", font=("Arial", 16)).pack(pady=10)
-    
-    tk.Button(admin_menu, text="Add Question", width=25, command=lambda: [admin_menu.destroy(), add_question_form(root)]).pack(pady=5)
-    
-    tk.Button(admin_menu, text="View Questions", width=25, command=lambda: [admin_menu.destroy(), view_questions_form(root)]).pack(pady=5)
