@@ -6,7 +6,8 @@ from Question import Question
 from tkinter import messagebox
 
 #Part 1 user GUI menu
-def start_user_quiz(root):
+def start_user_quiz(root, return_home_callback):
+
     select_frame = tk.Frame(root)
     select_frame.pack(pady=20)
 
@@ -26,12 +27,13 @@ def start_user_quiz(root):
     def begin_quiz():
         selected_course = course_var.get()
         select_frame.destroy()
-        display_quiz_questions(root, selected_course)
+        display_quiz_questions(root, selected_course, return_home_callback)
 
     tk.Button(select_frame, text="Start Quiz", command=begin_quiz).pack(pady=10)
 
 # Part 2 displays quiz questions all at once- and with scroll 
-def display_quiz_questions(root, course_name):
+def display_quiz_questions(root, course_name, return_home_callback):
+
     # Frame that holds the scrollable quiz content
     outer_frame = tk.Frame(root)
     outer_frame.pack(fill="both", expand=True)
@@ -115,8 +117,7 @@ def display_quiz_questions(root, course_name):
 
         def return_home():
             result_frame.destroy()
-            from main import start_app
-            start_app()
+            return_home_callback()
 
         tk.Button(result_frame, text="Return to Home", command=return_home, width=20).pack(pady=20)
 

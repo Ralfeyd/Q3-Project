@@ -18,7 +18,8 @@ def start_app():
 
     tk.Label(login_frame, text="Quiz Bowl App", font=('Arial', 18)).pack(pady=10)
     tk.Button(login_frame, text="Admin", width=20, command=lambda: [login_frame.destroy(), admin_login_screen(root, start_admin_flow)]).pack(pady=5)
-    tk.Button(login_frame, text="Take Quiz", width=20, command=lambda: [login_frame.destroy(), start_user_quiz(root)]).pack(pady=5)
+    tk.Button(login_frame, text="Take Quiz", width=20, command=lambda: [login_frame.destroy(), start_user_quiz(root, start_app)]).pack(pady=5)
+
 
 if __name__ == "__main__":
     root = tk.Tk()
