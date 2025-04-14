@@ -26,3 +26,14 @@ if __name__ == "__main__":
     root.geometry("500x500")
     start_app()
     root.mainloop()
+
+# user interface
+from User_interface import start_user_quiz  # Add this import
+
+def start_app():
+    login_frame = tk.Frame(root)
+    login_frame.pack(pady=50)
+
+    tk.Label(login_frame, text="Quiz Bowl App", font=('Arial', 18)).pack(pady=10)
+    tk.Button(login_frame, text="Admin", width=20, command=lambda: [login_frame.destroy(), admin_login_screen(root, start_admin_flow)]).pack(pady=5)
+    tk.Button(login_frame, text="Take Quiz", width=20, command=lambda: [login_frame.destroy(), start_user_quiz(root)]).pack(pady=5)
