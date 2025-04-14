@@ -124,3 +124,100 @@ def view_questions_form(root):
             text_output.insert(tk.END, f"Error: {str(e)}")
 
     tk.Button(view_frame, text="Load Questions", command=load_questions).grid(row=1, column=0, columnspan=2, pady=5)
+
+#part 4 managing questions
+def manage_questions_form(root):
+    manage_frame = tk.Frame(root)
+    manage_frame.pack(pady=10)
+
+    course_var = tk.StringVar()
+    course_var.set("ProgrammingLogicAndAnalyticalThinking")
+
+    tk.Label(manage_frame, text="Select Course:").grid(row=0, column=0, sticky="e")
+    course_menu = tk.OptionMenu(manage_frame, course_var,
+        "ProgrammingLogicAndAnalyticalThinking",
+        "BusinessDatabaseManagement",
+        "DataDrivenDecisionMaking",
+        "BusinessApplicationsDevelopment",
+        "PrinciplesOfAccountingII"
+    )
+    course_menu.grid(row=0, column=1, padx=5, pady=5)
+
+    list_frame = tk.Frame(manage_frame)
+    list_frame.grid(row=2, column=0, columnspan=2, pady=10)
+
+    def load_questions():
+        for widget in list_frame.winfo_children():
+            widget.destroy()
+
+        course = course_var.get()
+        conn = sqlite3.connect("Quiz.db")
+        cur = conn.cursor()
+        cur.execute(f"SELECT * FROM {course}")
+        rows = cur.fetchall()
+        conn.close()
+
+        if not rows:
+            tk.Label(list_frame, text="No questions found.").pack()
+            return
+
+        for row in rows:
+            q_id, question, a, b, c, d, correct = row
+
+            q_frame = tk.Frame(list_frame, borderwidth=1, relief="solid", pady=5, padx=5)
+            q_frame.pack(pady=3, fill="x")
+
+            tk.Label(q_frame, text=f"Q: {question}", wraplength=500, justify="left").grid(row=0, column=0, columnspan=2, sticky="w")
+            tk.Button(q_frame, text="Edit", command=lambda r=row: edit_question_popup(root, course, r)).grid(row=0, column=2, padx=5)
+            tk.Button(q_frame, text="Delete", command=lambda id=q_id: delete_question(course, id, load_questions)).grid(row=0, column=3, padx=5)
+
+    tk.Button(manage_frame, text="Load Questions", command=load_questions).grid(row=1, column=0, columnspan=2, pady=5)
+
+#part 5 edit/ delete functions
+def delete_question(table, q_id, refresh_callback):
+    conn = sqlite3.connect("Quiz.db")
+    cur = conn.cursor()
+    cur.execute(f"DELETE FROM {table} WHERE id = ?", (q_id,))
+    conn.commit()
+    conn.close()
+    messagebox.showinfo("Deleted", "Question deleted successfully.")
+    refresh_callback()
+
+
+def edit_question_popup(root, table, row):
+    popup = tk.Toplevel(root)
+    popup.title("Edit Question")
+    popup.geometry("500x400")
+
+    q_id, question, a, b, c, d, correct = row
+    fields = ["Question", "Option A", "Option B", "Option C", "Option D", "Correct Option"]
+    values = [question, a, b, c, d, correct]
+
+    entries = []
+
+    for i, label in enumerate(fields):
+        tk.Label(popup, text=label + ":").grid(row=i, column=0, sticky="e", padx=5, pady=5)
+        entry = tk.Entry(popup, width=50)
+        entry.insert(0, values[i])
+        entry.grid(row=i, column=1, padx=5, pady=5)
+        entries.append(entry)
+
+    def save_changes():
+        updated = [e.get().strip() for e in entries]
+        if updated[-1].upper() not in ['A', 'B', 'C', 'D']:
+            messagebox.showerror("Invalid", "Correct option must be A, B, C, or D.")
+            return
+
+        conn = sqlite3.connect("Quiz.db")
+        cur = conn.cursor()
+        cur.execute(f"""
+            UPDATE {table}
+            SET question=?, option_a=?, option_b=?, option_c=?, option_d=?, correct_option=?
+            WHERE id=?
+        """, (*updated, q_id))
+        conn.commit()
+        conn.close()
+        messagebox.showinfo("Success", "Question updated.")
+        popup.destroy()
+
+    tk.Button(popup, text="Save Changes", command=save_changes).grid(row=6, column=0, columnspan=2, pady=15)
