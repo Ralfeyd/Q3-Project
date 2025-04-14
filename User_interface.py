@@ -30,11 +30,33 @@ def start_user_quiz(root):
 
     tk.Button(select_frame, text="Start Quiz", command=begin_quiz).pack(pady=10)
 
-# Part 2 displays quiz questions all at once
+# Part 2 displays quiz questions all at once- and with scroll 
 def display_quiz_questions(root, course_name):
-    quiz_frame = tk.Frame(root)
-    quiz_frame.pack(pady=10)
+    # Frame that holds the scrollable quiz content
+    outer_frame = tk.Frame(root)
+    outer_frame.pack(fill="both", expand=True)
 
+    # Canvas + Scrollbar setup
+    canvas = tk.Canvas(outer_frame)
+    scrollbar = tk.Scrollbar(outer_frame, orient="vertical", command=canvas.yview)
+    scrollable_frame = tk.Frame(canvas)
+
+    # Allow scrolling as inner frame grows
+    scrollable_frame.bind(
+        "<Configure>",
+        lambda e: canvas.configure(
+            scrollregion=canvas.bbox("all")
+        )
+    )
+
+    # Attach the scrollable frame to the canvas
+    canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+    canvas.configure(yscrollcommand=scrollbar.set)
+
+    canvas.pack(side="left", fill="both", expand=True)
+    scrollbar.pack(side="right", fill="y")
+
+    # Load questions from database
     conn = sqlite3.connect("Quiz.db")
     cur = conn.cursor()
     cur.execute(f"SELECT * FROM {course_name}")
@@ -42,30 +64,32 @@ def display_quiz_questions(root, course_name):
     conn.close()
 
     if not rows:
-        tk.Label(quiz_frame, text="No questions found for this quiz.").pack()
+        tk.Label(scrollable_frame, text="No questions found for this quiz.").pack()
         return
 
     questions = []
     user_answers = []
 
+    # Display each question and multiple-choice options
     for i, row in enumerate(rows):
         q_id, text, a, b, c, d, correct = row
         q = Question(text, [a, b, c, d], correct)
         questions.append(q)
 
-        tk.Label(quiz_frame, text=f"Q{i+1}: {q.question_text}", wraplength=600, justify="left", anchor="w").pack(anchor="w", pady=5)
+        tk.Label(scrollable_frame, text=f"Q{i+1}: {q.question_text}", wraplength=600, justify="left", anchor="w").pack(anchor="w", pady=5)
 
         selected = tk.StringVar()
         user_answers.append(selected)
 
         for opt_idx, opt_label in enumerate(['A', 'B', 'C', 'D']):
             tk.Radiobutton(
-                quiz_frame,
+                scrollable_frame,
                 text=f"{opt_label}: {q.options[opt_idx]}",
                 variable=selected,
                 value=opt_label
             ).pack(anchor="w")
 
+    # Final score screen on submission
     def submit_quiz():
         score = 0
         total = len(questions)
@@ -78,8 +102,23 @@ def display_quiz_questions(root, course_name):
             elif q.check_answer(answer):
                 score += 1
 
-        messagebox.showinfo("Quiz Completed", f"You scored {score}/{total}.\nUnanswered: {unanswered}")
-        quiz_frame.destroy()
-# submit button
-    tk.Button(quiz_frame, text="Submit Quiz", command=submit_quiz).pack(pady=20)
+        # Remove the quiz screen
+        outer_frame.destroy()
 
+        # Final score screen
+        result_frame = tk.Frame(root)
+        result_frame.pack(pady=100)
+
+        tk.Label(result_frame, text="Quiz Completed!", font=("Arial", 20)).pack(pady=10)
+        tk.Label(result_frame, text=f"Score: {score} / {total}", font=("Arial", 16)).pack(pady=5)
+        tk.Label(result_frame, text=f"Unanswered: {unanswered}", font=("Arial", 14)).pack(pady=5)
+
+        def return_home():
+            result_frame.destroy()
+            from main import start_app
+            start_app()
+
+        tk.Button(result_frame, text="Return to Home", command=return_home, width=20).pack(pady=20)
+
+    # submit button
+    tk.Button(scrollable_frame, text="Submit Quiz", command=submit_quiz).pack(pady=20)
