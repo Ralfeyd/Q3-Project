@@ -72,6 +72,13 @@ def display_quiz_questions(root, course_name, return_home_callback):
     questions = []
     user_answers = []
 
+#score tracker
+    answered_var = tk.StringVar()
+    answered_var.set("Answered: 0 / " + str(len(rows)))
+
+# Tracker label
+    tk.Label(scrollable_frame, textvariable=answered_var, font=("Arial", 12, "bold")).pack(pady=10)
+
     # Display each question and multiple-choice options
     for i, row in enumerate(rows):
         q_id, text, a, b, c, d, correct = row
@@ -81,6 +88,13 @@ def display_quiz_questions(root, course_name, return_home_callback):
         tk.Label(scrollable_frame, text=f"Q{i+1}: {q.question_text}", wraplength=600, justify="left", anchor="w").pack(anchor="w", pady=5)
 
         selected = tk.StringVar()
+        def make_tracer(index):
+            def tracer(*args):
+                answered_count = sum(1 for ans in user_answers if ans.get() != "")
+                answered_var.set(f"Answered: {answered_count} / {len(questions)}")
+            return tracer
+
+        selected.trace_add("write", make_tracer(i))
         user_answers.append(selected)
 
         for opt_idx, opt_label in enumerate(['A', 'B', 'C', 'D']):
