@@ -1,7 +1,8 @@
 #Luke Duran 04/13/25
 
 import tkinter as tk
-from Admin_interface import admin_login_screen, add_question_form
+from Admin_interface import admin_login_screen, add_question_form, view_questions_form
+
 
 def start_admin_flow():
     add_question_form(root)
@@ -27,5 +28,7 @@ def start_admin_flow():
     admin_menu.pack(pady=50)
 
     tk.Label(admin_menu, text="Admin Panel", font=("Arial", 16)).pack(pady=10)
-    tk.Button(admin_menu, text="Add Question", command=lambda: [admin_menu.destroy(), add_question_form(root)]).pack(pady=5)
-    tk.Button(admin_menu, text="View Questions", command=lambda: [admin_menu.destroy(), view_questions_form(root)]).pack(pady=5)
+    
+    tk.Button(admin_menu, text="Add Question", width=25, command=lambda: [admin_menu.destroy(), add_question_form(root)]).pack(pady=5)
+    
+    tk.Button(admin_menu, text="View Questions", width=25, command=lambda: [admin_menu.destroy(), view_questions_form(root)]).pack(pady=5)

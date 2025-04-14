@@ -5,7 +5,7 @@ import sqlite3
 from tkinter import messagebox
 
 # Part 1 Admin login + GUI framework
-ADMIN_PASSWORD = "Password1"  #Password for admin access!!
+ADMIN_PASSWORD = "1"  #Password for admin access!!
 
 def admin_login_screen(root, open_admin_panel):
     def check_password():
