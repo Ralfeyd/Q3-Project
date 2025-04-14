@@ -4,7 +4,7 @@ import tkinter as tk
 import sqlite3
 from tkinter import messagebox
 
-# Admin login + GUI framework
+# Part 1 Admin login + GUI framework
 ADMIN_PASSWORD = "Password1"  #Password for admin access!!
 
 def admin_login_screen(root, open_admin_panel):
@@ -27,7 +27,7 @@ def admin_login_screen(root, open_admin_panel):
     tk.Button(login_frame, text="Login", command=check_password).pack(pady=10)
 
 
-# admitted admin GUI framework for adding,editing, and deleting questions below
+#Part 2 admitted admin GUI framework for adding,editing, and deleting questions below
 
 def add_question_form(root):
     form_frame = tk.Frame(root)
@@ -80,3 +80,47 @@ def add_question_form(root):
             messagebox.showerror("Error", str(e))
 
     tk.Button(form_frame, text="Add Question", command=submit_question).grid(row=7, column=0, columnspan=2, pady=10)
+
+# Part 3 GUI to view questions by course
+
+def view_questions_form(root):
+    view_frame = tk.Frame(root)
+    view_frame.pack(pady=10)
+
+    # Dropdown for selecting course
+    course_var = tk.StringVar()
+    course_var.set("ProgrammingLogicAndAnalyticalThinking")
+
+    tk.Label(view_frame, text="Select Course:").grid(row=0, column=0, sticky="e")
+    course_menu = tk.OptionMenu(view_frame, course_var,
+        "ProgrammingLogicAndAnalyticalThinking",
+        "BusinessDatabaseManagement",
+        "DataDrivenDecisionMaking",
+        "BusinessApplicationsDevelopment",
+        "PrinciplesOfAccountingII"
+    )
+    course_menu.grid(row=0, column=1, padx=5, pady=5)
+
+    text_output = tk.Text(view_frame, width=70, height=15)
+    text_output.grid(row=2, column=0, columnspan=2, pady=10)
+
+    def load_questions():
+        text_output.delete(1.0, tk.END)
+        course = course_var.get()
+        try:
+            conn = sqlite3.connect("Quiz.db")
+            cur = conn.cursor()
+            cur.execute(f"SELECT * FROM {course}")
+            rows = cur.fetchall()
+            conn.close()
+
+            if rows:
+                for row in rows:
+                    q_id, question, a, b, c, d, correct = row
+                    text_output.insert(tk.END, f"ID: {q_id}\nQ: {question}\nA: {a}\nB: {b}\nC: {c}\nD: {d}\nCorrect: {correct}\n\n")
+            else:
+                text_output.insert(tk.END, "No questions found.")
+        except Exception as e:
+            text_output.insert(tk.END, f"Error: {str(e)}")
+
+    tk.Button(view_frame, text="Load Questions", command=load_questions).grid(row=1, column=0, columnspan=2, pady=5)
