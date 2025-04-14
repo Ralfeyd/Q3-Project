@@ -128,12 +128,12 @@ def view_questions_form(root):
 #part 4 managing questions
 def manage_questions_form(root):
     manage_frame = tk.Frame(root)
-    manage_frame.pack(pady=10)
+    manage_frame.pack(fill="both", expand=True)
 
     course_var = tk.StringVar()
     course_var.set("ProgrammingLogicAndAnalyticalThinking")
 
-    tk.Label(manage_frame, text="Select Course:").grid(row=0, column=0, sticky="e")
+    tk.Label(manage_frame, text="Select Course:").grid(row=0, column=0, sticky="e", padx=5, pady=5)
     course_menu = tk.OptionMenu(manage_frame, course_var,
         "ProgrammingLogicAndAnalyticalThinking",
         "BusinessDatabaseManagement",
@@ -143,11 +143,30 @@ def manage_questions_form(root):
     )
     course_menu.grid(row=0, column=1, padx=5, pady=5)
 
-    list_frame = tk.Frame(manage_frame)
-    list_frame.grid(row=2, column=0, columnspan=2, pady=10)
+    # Scrollable frame setup
+    canvas = tk.Canvas(manage_frame, height=400)
+    scrollbar = tk.Scrollbar(manage_frame, orient="vertical", command=canvas.yview)
+    scrollable_frame = tk.Frame(canvas)
+
+    scrollable_frame.bind(
+        "<Configure>",
+        lambda e: canvas.configure(
+            scrollregion=canvas.bbox("all")
+        )
+    )
+
+    canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+    canvas.configure(yscrollcommand=scrollbar.set)
+
+    canvas.grid(row=2, column=0, columnspan=2, sticky="nsew")
+    scrollbar.grid(row=2, column=2, sticky="ns")
+
+    # Allow vertical expansion
+    manage_frame.grid_rowconfigure(2, weight=1)
+    manage_frame.grid_columnconfigure(1, weight=1)
 
     def load_questions():
-        for widget in list_frame.winfo_children():
+        for widget in scrollable_frame.winfo_children():
             widget.destroy()
 
         course = course_var.get()
@@ -158,13 +177,13 @@ def manage_questions_form(root):
         conn.close()
 
         if not rows:
-            tk.Label(list_frame, text="No questions found.").pack()
+            tk.Label(scrollable_frame, text="No questions found.").pack()
             return
 
         for row in rows:
             q_id, question, a, b, c, d, correct = row
 
-            q_frame = tk.Frame(list_frame, borderwidth=1, relief="solid", pady=5, padx=5)
+            q_frame = tk.Frame(scrollable_frame, borderwidth=1, relief="solid", pady=5, padx=5)
             q_frame.pack(pady=3, fill="x")
 
             tk.Label(q_frame, text=f"Q: {question}", wraplength=500, justify="left").grid(row=0, column=0, columnspan=2, sticky="w")
